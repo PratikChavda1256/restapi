@@ -4,19 +4,14 @@ const { Products } = require("../models/productModel");
 
 exports.addItemToCart = async (req, res) => {
   const userId = req.user._id;
-  // console.log(userId)
   if (!userId) {
     res.status(400);
     throw new Error("No such user Found");
   }
-  // console.log(userId);
   const userAvailable = await Users?.findById(userId);
 
   let { productId, selectedQuentity, title, price, image } = req.body;
   let quantity = selectedQuentity;
-  // if (selectedQuentity) {
-  //   quantity = selectedQuentity;
-  // }
   if (!productId)
     return res.status(400).send({ status: false, message: "Invalid product" });
   let productAvailable = await Products?.findOne({ _id: req.body.productId });
@@ -63,7 +58,7 @@ exports.getCart = async (req, res) => {
     res.status(400);
     throw new Error("No such user Found");
   }
-  // console.log(userId);
+
   const userAvailable = await Users?.findById(userId);
 
   let cart = await Cart.findOne({ userId: userId });
@@ -84,9 +79,6 @@ exports.decreaseQuantity = async (req, res) => {
     res.status(400);
     throw new Error("No such user Found");
   }
-  // console.log(userId);
-  const userAvailable = await Users?.findById(userId);
-
   let productId = req.body.productId;
   let quantity = req.body.quantity;
 
@@ -161,7 +153,9 @@ exports.deleteCart = async (req, res) => {
   }
   try {
     // Find the cart by user ID and delete it
-    const cart = await Cart.findOneAndDelete({ userId });
+    const cart = await Cart.findOne({ userId });
+    cart.products = [];
+    cart.save();
 
     if (!cart) {
       return res.status(404).json({ message: "Cart not found" });

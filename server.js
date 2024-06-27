@@ -1,30 +1,41 @@
-const morgan = require('morgan')
-const cookieParser = require('cookie-parser')
-const bodyParser = require('body-parser')
-const connectDb = require('./config/dbConnection')
-const dotenv = require('dotenv').config()
-const express = require('express')
-const { notFound, errorHandler } = require('./middlewares/errorHandler')
-const cors = require('cors')
-const app = express()
+const express = require("express");
+const morgan = require("morgan");
+const cookieParser = require("cookie-parser");
+const dotenv = require("dotenv");
+const cors = require("cors");
+const { notFound, errorHandler } = require("./middlewares/errorHandler");
+const connectDb = require("./config/dbConnection");
 
-const port = process.env.PORT || 5050
-app.use(cors())
-app.use(morgan('dev'))
-app.use(bodyParser.json())
-app.use(bodyParser.urlencoded({extended: false}))
-app.use(cookieParser())
+// Load environment variables
+const result = dotenv.config();
+if (result.error) {
+  throw result.error;
+}
 
+// Connect to the database
+connectDb();
 
-app.use('/auth', require('./routes/authRoute'))
-app.use('/users', require('./routes/userRoute'))
-app.use('/products', require('./routes/productRoute'))
-app.use('/carts', require('./routes/cartRoute'))
+const app = express();
+const port = process.env.PORT || 5050;
 
-app.use(notFound)
-app.use(errorHandler)
+// Middleware setup
+app.use(cors());
+app.use(morgan("dev"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
 
-app.listen(port, ()=>{
-    connectDb()
-    console.log(`Listening to ${port}`);
-})
+// Route setup
+app.use("/auth", require("./routes/authRoute"));
+app.use("/users", require("./routes/userRoute"));
+app.use("/products", require("./routes/productRoute"));
+app.use("/carts", require("./routes/cartRoute"));
+
+// Error handling middleware
+app.use(notFound);
+app.use(errorHandler);
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
